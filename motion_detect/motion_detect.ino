@@ -13,7 +13,10 @@ unsigned long previous_time = 0;                      //last cycle time
 unsigned long current_time = 0;                          //current cycle time
 unsigned long init_time = 0;                          // time when enter when enter loop
 
-#define IMUdelay (1000)    // IMU refresh rate in milisec
+int bending_wrist = 0;
+bool positionflag;
+
+#define IMUdelay 200 // IMU refresh rate in milisec was 1000
 
 Adafruit_BNO055 bno = Adafruit_BNO055();
 
@@ -52,7 +55,9 @@ void setup(void)
   Serial.print("\t\t\t\t");
   Serial.print("Acceleration");
   Serial.print("\t\t\t\t");
-  Serial.println("Calibration");
+  Serial.print("Calibration");
+  Serial.print("\t\t");
+  Serial.println("Bendcount/debugflag");
     
 
 
@@ -87,7 +92,7 @@ void loop(void)
     // - VECTOR_EULER         - degrees
     // - VECTOR_LINEARACCEL   - m/s^2
     // - VECTOR_GRAVITY       - m/s^2
-    
+    //https://www.allaboutcircuits.com/projects/bosch-absolute-orientation-sensor-bno055/
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
     imu::Vector<3> accelerometer = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
     imu::Vector<3> gyroscope = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
@@ -125,8 +130,39 @@ void loop(void)
     Serial.print("; ");
     Serial.print(accel, DEC);
     Serial.print("; ");
-    Serial.println(mag, DEC);
+    Serial.print(mag, DEC);
+    Serial.print("\t\t");
+    //recognize movement
 
+    if(positionflag != 2){   //fullly
+
+      //bending wrist
+      //charcteristic invloved: euler.y() and gyroscope.y()
+
+      if(euler.y() <= 10 & gyroscope.y() <= 5){ //detect init(flat) position
+        positionflag = 1;
+      }
+
+      if(positionflag == 1 & euler.y() >= 70 & gyroscope.y() <= 5){ //destination position
+        
+        bending_wrist += 1;
+        positionflag = 0;
+        
+      }
+
+           
+
+      
+      
+      
+    }
+
+      Serial.print("\t");
+      Serial.print(bending_wrist);
+      Serial.print("; ");  //debug
+      Serial.println(positionflag);
+      
+      
 
     
 
