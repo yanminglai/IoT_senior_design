@@ -1,3 +1,5 @@
+
+
 /*
  * IoT design, Yanming Lai
  * 
@@ -7,6 +9,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <BluetoothSerial.h>
 
 //initializations
 unsigned long previous_time = 0;                      //last cycle time
@@ -26,60 +29,64 @@ bool positionflag;
 
 Adafruit_BNO055 bno = Adafruit_BNO055();
 
+BluetoothSerial SerialBT;  //enable bluetooth modual
+
 //------------------------------------------------------------------------------------------------//
 void setup(void)
 {
   Serial.begin(9600);
-  Serial.println("BNO055 Data Test");
-  Serial.println("");
+  SerialBT.begin("ESP32");
+  //SerialBT.println("The device started, now you can pair it with bluetooth!");
+  //SerialBT.println("BNO055 Data Test");
+  //SerialBT.println("");
 
   // Initialise the sensor
   if (!bno.begin())
   {
-    Serial.print("No BNO055 detected ...");  // Connection failed
+    SerialBT.print("No BNO055 detected ...");  // Connection failed
     while (1);
   }
   delay(1000);
   
-  
+  /*
   int8_t temp = bno.getTemp();   //get temp at first
-  Serial.print("Current Temperature: ");
-  Serial.print(temp);
-  Serial.println(" C");
-  Serial.println("");
-
+  SerialBT.print("Current Temperature: ");
+  SerialBT.print(temp);
+  SerialBT.println(" C");
+  SerialBT.println("");
+*/
   bno.setExtCrystalUse(true);
+  /*
+  SerialBT.println("Calibration status: 0=uncalibrated, 3=fully calibrated");
 
-  Serial.println("Calibration status: 0=uncalibrated, 3=fully calibrated");
 
 
-
-  Serial.print("\t\t");
-  Serial.print("Position");
-  Serial.print("\t\t\t");
-  Serial.print("Angular velocity");
-  Serial.print("\t\t\t\t");
-  Serial.print("Acceleration");
-  Serial.print("\t\t\t\t");
-  Serial.print("Calibration");
-  Serial.print("\t\t");
-  Serial.print("Bendcount/debugflag");
-  Serial.print("\t\t");
-  Serial.println("spincount/max/min"); //spin count
+  SerialBT.print("\t\t");
+  SerialBT.print("Position");
+  SerialBT.print("\t\t\t");
+  SerialBT.print("Angular velocity");
+  SerialBT.print("\t\t\t\t");
+  SerialBT.print("Acceleration");
+  SerialBT.print("\t\t\t\t");
+  SerialBT.print("Calibration");
+  SerialBT.print("\t\t");
+  SerialBT.print("Bendcount/debugflag");
+  SerialBT.print("\t\t");
+  SerialBT.println("spincount/max/min"); //spin count
     
 
 
-  Serial.print("Time ");
-  Serial.print("\t\t");
-  Serial.print("Roll; Pitch; Yaw");
-  Serial.print("\t\t");
-  Serial.print("Roll rate; Pitch rate; Yaw rate");
-  Serial.print(" \t\t");
-  Serial.print("Accel X, Accel Y, Accel Z");
-  Serial.print("\t\t");
-  Serial.println("Sys; Gyro; Accel; Mag");
-
-  Serial.flush();             // wait for header line to go out
+  SerialBT.print("Time ");
+  SerialBT.print("\t\t");
+  SerialBT.print("Roll; Pitch; Yaw");
+  SerialBT.print("\t\t");
+  SerialBT.print("Roll rate; Pitch rate; Yaw rate");
+  SerialBT.print(" \t\t");
+  SerialBT.print("Accel X, Accel Y, Accel Z");
+  SerialBT.print("\t\t");
+  SerialBT.println("Sys; Gyro; Accel; Mag");
+  */
+  SerialBT.flush();             // wait for header line to go out, used to be serial.flush
   
   init_time = millis();         // get time and set as init
   previous_time = init_time;   //prepare
@@ -90,6 +97,9 @@ void setup(void)
 //------------------------------------------------------------------------------------------------//
 void loop(void)
 {
+  //SerialBT.print("Hello World");
+  
+  
   current_time = millis();
 
   if (current_time - previous_time >= IMUdelay) { //enter next loop
@@ -108,38 +118,40 @@ void loop(void)
     uint8_t system, gyro, accel, mag = 0;
     bno.getCalibration(&system, &gyro, &accel, &mag);   // get calibration
 
-    Serial.print(current_time - init_time);        // print current time stamp
-    Serial.print("\t\t");
+    /*SerialBT.print(current_time - init_time);        // print current time stamp
+    //SerialBT.print("\t\t");
+    
+    SerialBT.print(euler.x());
+    SerialBT.print("; ");
+    SerialBT.print(euler.y());
+    SerialBT.print("; ");
+    SerialBT.print(euler.z());
+    SerialBT.print("\t\t");
 
-    Serial.print(euler.x());
-    Serial.print("; ");
-    Serial.print(euler.y());
-    Serial.print("; ");
-    Serial.print(euler.z());
-    Serial.print("\t\t");
+    SerialBT.print(gyroscope.x());
+    SerialBT.print("; ");
+    SerialBT.print(gyroscope.y());
+    SerialBT.print("; ");
+    SerialBT.print(gyroscope.z());
+    SerialBT.print(" \t\t\t\t");
 
-    Serial.print(gyroscope.x());
-    Serial.print("; ");
-    Serial.print(gyroscope.y());
-    Serial.print("; ");
-    Serial.print(gyroscope.z());
-    Serial.print(" \t\t\t\t");
+    SerialBT.print(accelerometer.x());
+    SerialBT.print("; ");
+    SerialBT.print(accelerometer.y());
+    SerialBT.print("; ");
+    SerialBT.print(accelerometer.z());
+    SerialBT.print("\t\t\t");
 
-    Serial.print(accelerometer.x());
-    Serial.print("; ");
-    Serial.print(accelerometer.y());
-    Serial.print("; ");
-    Serial.print(accelerometer.z());
-    Serial.print("\t\t\t");
+    SerialBT.print(system, DEC);  //for calibration 
+    SerialBT.print("; ");
+    SerialBT.print(gyro, DEC);
+    SerialBT.print("; ");
+    SerialBT.print(accel, DEC);
+    SerialBT.print("; ");
+    SerialBT.print(mag, DEC);
+    SerialBT.print("\t\t");
 
-    Serial.print(system, DEC);  //for calibration 
-    Serial.print("; ");
-    Serial.print(gyro, DEC);
-    Serial.print("; ");
-    Serial.print(accel, DEC);
-    Serial.print("; ");
-    Serial.print(mag, DEC);
-    Serial.print("\t\t");
+    */
     //recognize movement
 
     if(positionflag != 2){   //fullly
@@ -173,11 +185,11 @@ void loop(void)
       else{
       modified_eulerx = euler.x();  //modified value of eulerx from (0,360) to (-180,180)
       }
-      waistspinmax = max(waistspinmax, modified_eulerx); //keep updating max euler.x()
-      waistspinmin = min(waistspinmin, modified_eulerx);
+      waistspinmax = _max(waistspinmax, modified_eulerx); //keep updating max euler.x()
+      waistspinmin = _min(waistspinmin, modified_eulerx);
 
      
-      if((waistspinmax - waistspinmin) > 150){
+      if((waistspinmax - waistspinmin) > 180){
         spincount++;
         waistspinmax = 1;
         waistspinmin = 0;
@@ -189,16 +201,18 @@ void loop(void)
       
     }
 
-      Serial.print("\t");
-      Serial.print(bending_elbow);
-      Serial.print("; ");  //debug
-      Serial.print(positionflag);
-      Serial.print("\t\t");
-      Serial.print(spincount);
-      Serial.print("; ");
-      Serial.print(waistspinmax);
-      Serial.print(";");
-      Serial.println(waistspinmin);
+      //SerialBT.print("\t");
+      SerialBT.print(bending_elbow);
+      //SerialBT.print("; ");  //debug
+      //SerialBT.print(positionflag);
+      SerialBT.print("\t\t");
+      SerialBT.print(spincount);
+      SerialBT.println("\t");
+      delay(200);
+      //SerialBT.print("; ");
+      //SerialBT.print(waistspinmax);
+      //SerialBT.print(";");
+      //SerialBT.println(waistspinmin);
       
       
       
