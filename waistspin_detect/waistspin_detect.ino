@@ -86,7 +86,7 @@ void setup(void)
   SerialBT.print("\t\t");
   SerialBT.println("Sys; Gyro; Accel; Mag");
   */
-  SerialBT.flush();             // wait for header line to go out, used to be serial.flush
+  //SerialBT.flush();             // wait for header line to go out, used to be serial.flush
   
   init_time = millis();         // get time and set as init
   previous_time = init_time;   //prepare
@@ -127,7 +127,7 @@ void loop(void)
     SerialBT.print("; ");
     SerialBT.print(euler.z());
     SerialBT.print("\t\t");
-
+    
     SerialBT.print(gyroscope.x());
     SerialBT.print("; ");
     SerialBT.print(gyroscope.y());
@@ -201,11 +201,12 @@ void loop(void)
       
     }
 
-      //SerialBT.print("\t");
+      SerialBT.print("bend=");
       SerialBT.print(bending_elbow);
       //SerialBT.print("; ");  //debug
       //SerialBT.print(positionflag);
       SerialBT.print("\t\t");
+      SerialBT.print("spin=");
       SerialBT.print(spincount);
       SerialBT.println("\t");
       delay(200);
